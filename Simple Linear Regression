@@ -1,0 +1,94 @@
+#This regression code checks for the Assumptions that are necessary to run a linear regression#
+
+class Simple_linear_reg():
+    def __init__(self,Y,X):
+        import numpy as np
+        self.X = np.array(X)
+        self.Y = np.array(Y)
+        self.len1 = len(X)
+        self.len2 = len(Y)
+        self.Assumption()
+        
+    def Assumption(self):
+        import pandas as pd
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import seaborn as sb
+        data3 = pd.DataFrame(self.X,self.Y)
+        data3 = data3.reset_index()
+        data3.columns=['X','Y']
+
+        
+        if (self.len1 != self.len2):
+            print("Variables not of same length")
+        else:
+            A = sb.pairplot(data3)
+            print(A)
+ 
+        mean_x = np.mean(self.X)
+        mean_y = np.mean(self.Y)
+
+        m = len(self.X)
+
+        numer = 0
+        denom = 0
+        for i in range(m):
+            numer += (self.X[i] - mean_x) * (self.Y[i] - mean_y)
+            denom += (self.X[i] - mean_x) **2
+        b1 = numer / denom
+        b0 = mean_y - (b1 * mean_x)
+
+        self.Y_pred = b0 + b1 * self.X
+            
+        residual = self.Y - self.Y_pred
+    
+        plt.figure()
+        sb.distplot(residual)
+        plt.title("HOMOSCEDASTICITY",fontsize=12)
+        plt.xlabel("Y Predicted")
+        plt.ylabel("Residual")
+        plt.show()
+        self.Intercept()
+    
+    def Intercept(self):
+        import statsmodels.api as sm
+        
+        X = sm.add_constant(self.X) # adding a constant
+
+        model = sm.OLS(self.Y, X).fit()
+        self.predictions = model.predict(X) 
+        
+    
+        self.resids = model.resid
+
+        print_model = model.summary()
+        print(print_model)
+        self.Plot()
+
+
+
+    def Plot(self):
+        import statsmodels.api as sm
+        import matplotlib.pyplot as plt
+        import statistics
+            
+        X2 = sm.add_constant(self.X)
+        model = sm.OLS(self.Y, X2)
+        result = model.fit()
+        r2 = result.rsquared
+        rr2 = round(r2,3)
+        a = statistics.median(self.X)
+        b = statistics.median(self.Y)
+    
+        plt.figure(figsize=(8,5))
+        plt.scatter(self.X,self.Y,color="steelblue",s=5)
+        plt.plot(self.X,self.Y_pred,color="lightslategrey",linestyle="-")
+
+        
+        plt.text(a,b-3,("R Square:%.3f" %(rr2)), fontsize= 10,ha='left', va='center')
+        
+        TITLE=("LINEAR REGRESSION")
+        plt.title(TITLE,y=1, fontsize=20)
+        plt.xlabel("X",fontsize=15)
+        plt.ylabel("Y",fontsize=15)
+        plt.show()
